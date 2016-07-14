@@ -1,0 +1,7 @@
+To run master branch run apython (anaconda)
+
+To run whatver branch is checked out in the folder run ppython (port pythnon)
+
+To open up the notebook run ipython
+
+for the default system python run python

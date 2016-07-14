@@ -1,0 +1,8 @@
+executable = /data2/fleming/GPHOTON_INPUT/sdBs/CONDOR/sdB_pg_0920+297_coadd.sh
+output = /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/CONDOR_OUTPUT/sdB_pg_0920+297_coadd.condor_stdout
+error = /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/CONDOR_OUTPUT/sdB_pg_0920+297_coadd.condor_stderr
+log = /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/CONDOR_OUTPUT/sdB_pg_0920+297_coadd.condor_log
+getenv = True
+notification = Never
+universe = vanilla
+queue = 1

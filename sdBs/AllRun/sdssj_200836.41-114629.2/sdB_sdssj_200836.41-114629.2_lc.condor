@@ -1,0 +1,8 @@
+executable = /data2/fleming/GPHOTON_INPUT/sdBs/CONDOR/sdB_sdssj_200836.41-114629.2_lc.sh
+output = /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/CONDOR_OUTPUT/sdB_sdssj_200836.41-114629.2_lc.condor_stdout
+error = /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/CONDOR_OUTPUT/sdB_sdssj_200836.41-114629.2_lc.condor_stderr
+log = /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/CONDOR_OUTPUT/sdB_sdssj_200836.41-114629.2_lc.condor_log
+getenv = True
+notification = Never
+universe = vanilla
+queue = 1

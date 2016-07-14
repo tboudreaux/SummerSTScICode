@@ -1,0 +1,5 @@
+#!/bin/tcsh
+date
+mkdir -p /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/sdB_GALEX_J06196+3430/
+python sdB_GALEX_J06196+3430_coadd.py
+date

@@ -1,0 +1,5 @@
+#!/bin/tcsh
+date
+mkdir -p /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/sdB_kuv_02501-0630/
+python sdB_kuv_02501-0630_lc.py
+date

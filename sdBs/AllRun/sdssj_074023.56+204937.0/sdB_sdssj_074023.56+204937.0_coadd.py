@@ -1,0 +1,5 @@
+from gPhoton.gMap import gMap
+def main():
+	gMap(band="NUV", skypos=[115.098167,20.826944],  skyrange=[0.0333333333333,0.0333333333333], stepsz = 30., cntfile="/data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/sdB_sdssj_074023.56+204937.0/sdB_sdssj_074023.56+204937.0_movie_count.fits", cntcoaddfile="/data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdB/sdB_sdssj_074023.56+204937.0/sdB_sdssj_074023.56+204937.0_count_coadd.fits", overwrite=True, verbose=3)
+if __name__ == "__main__":
+	main()

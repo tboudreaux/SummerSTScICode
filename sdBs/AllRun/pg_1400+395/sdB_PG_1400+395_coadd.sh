@@ -1,0 +1,5 @@
+#!/bin/tcsh
+date
+mkdir -p /data2/fleming/GPHOTON_OUTPUT/LIGHTCURVES/sdBs/sdB_PG_1400+395/
+python sdB_PG_1400+395_coadd.py
+date
