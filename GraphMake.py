@@ -8,6 +8,9 @@ from astropy.coordinates import SkyCoord
 from gPhoton.gphoton_utils import read_lc
 from datetime import datetime
 import plotly.plotly as py
+import plotly.tools as tls
+import plotly.graph_objs as go
+from plotly import tools
 starttime = datetime.now()
 #py.sign_in('tboudreaux', 'Nhv#r&HBlVlb6K9UR#0ihHxX0OK7!2')
 ### FLAGS ###
@@ -20,8 +23,8 @@ THIRTYTWO = 'Detector Edge'
 SIXTYFOUR = 'bg Hotspot'
 ONETWENTYEIGHT = 'bg Mask'
 
-FLAGARRAY = [ONE, TWO, FOUR, EIGHT, SIXTEEN, THIRTYTWO, SIXTYFOUR, ONETWENTYEIGHT]
-NUMERICFLAGARRAY = [0, 1, 2, 3, 4, 5, 6, 7]
+FLAGARRAY = [ONE, TWO, FOUR, EIGHT, SIXTEEN, THIRTYTWO, SIXTYFOUR, ONETWENTYEIGHT, 'NO FLAGS']
+NUMERICFLAGARRAY = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 marker_style = dict(color='green', linestyle=':', marker='o',
                             markersize=5, markerfacecoloralt='gray')
@@ -30,13 +33,14 @@ start = os.path.abspath('.')
 
 filename = 'sdBHundredLs.csv'
 
-readfile = open(filename, 'rb')
-readfile = readfile.readlines()
-readfile = [x.rsplit() for x in readfile]
+readfile = [x.rsplit() for x in open(filename, 'rb').readlines()]
+readfile.pop(0)
 urlout = []
 urlfile = open('plotlyurls.csv', 'w')
 # Target iterator loop
 for i in range(len(readfile)):
+    print readfile[i][0]
+    try:
         numsave = 1
 #for i in range(5):
         os.chdir('sdBs/HundredRun/' + readfile[i][0])
@@ -58,7 +62,7 @@ for i in range(len(readfile)):
             #   Time deltas between data making it impossible to read
             for k in range(len(gAppFile['t_mean'])):
                 if k + 1 < len(gAppFile['t_mean']):
-                    if gAppFile['t_mean'][k + 1] - gAppFile['t_mean'][k] > 1800:
+                    if gAppFile['t_mean'][k + 1] - gAppFile['t_mean'][k] > 500:
                         differnce = gAppFile['t_mean'][k + 1] - gAppFile['t_mean'][k]
                         if differnce > greatestdiffernce:
                             greatestdiffernce = differnce
@@ -117,15 +121,96 @@ for i in range(len(readfile)):
                             goodflux.append(fluxfile[k][p])
                             goodtime.append(gAppOutput[k][p])
                             gooderr.append(fluxerr[k][p])
+                            dataflags.append([0])
                     print 'Begining plot creation for target ' + readfile[i][0]
-                    plt.figure(1, figsize=(7, 5))
-                    fig, axt = plt.subplots()
-                    ax1 = plt.subplot(412)
-                    checks = plt.subplot(411, sharex=ax1)
-                    checks.set_ylim(0, 8)
-                    for num in range(8):
-                        checks.axhline(y = num, linestyle='--', color='gray')
-                    checks.set_ylabel('flag (power 2 scale)')
+                    print dataflags
+                    useflags = [str(x) for x in dataflags]
+                    writeflags = []
+                    for q in dataflags:
+                        for p in q:
+                            writeflags.append(FLAGARRAY[NUMERICFLAGARRAY.index(p) - 1])
+                    print writeflags
+                    LCTraceGeneralBad = go.Scatter(
+                            x = badtime,
+                            y = badflux,
+                            mode = 'markers',
+                            text = writeflags,
+                            marker = dict(
+                                    color='rgba(255, 182, 193, 0.9)',
+                                )
+                            )
+                    LCTraceGeneralAll = go.Scatter(
+                            x = gAppOutput[k],
+                            y = fluxfile[k],
+                            mode = 'lines+markers'
+                            text = writeflags
+                            marker = dict(
+                                    color = 'rgba(1, 182, 193, 0.9)',
+                                )
+                            )
+                    LCTraceBad = go.Scatter(
+                            x = badtime,
+                            y = badflux,
+                            mode = 'markers',
+                            text = writeflags,
+                            error_y=dict(
+                                    type='data',
+                                    array=fluxerr[k],
+                                    visible=True,
+                                ),
+                            marker = dict(
+                                color = 'rgba(255, 182, 193, .9)',
+                                ),
+                            yaxis = 'y2'
+                            )
+                    LCTraceAll = go.Scatter(
+                            x = gAppOutput[k],
+                            y = fluxfile[k],
+                            mode = 'lines+markers',
+                            text = writeflags,
+                            error_y=dict(
+                                    type='data',
+                                    array=fluxerr[k],
+                                    visible=True,
+                                ),
+                            marker = dict(
+                                color = 'rgba(1, 182, 193, .9)',
+                                ),
+                            yaxis = 'y2'
+                            )
+                    DetRadTrace = go.Scatter(
+                            x = gAppOutput[k],
+                            y = detRAD[k],
+                            mode = 'lines+markers',
+                            yaxis = 'y3'
+                            )
+                    ExpTrace = go.Scatter(
+                            x = gAppOutput[k],
+                            y = exptime[k],
+                            mode = 'lines+markers',
+                            yaxis = 'y4'
+                            )
+                    data = [LCTraceAll, LCTraceGeneralAll, LCTraceGeneralBad, LCTraceBad, ExpTrace, DetRadTrace]
+                    layout = go.Layout(
+                            yaxis=dict(
+                                domain=[0.75, 1],
+                                title='Flux NE'
+                                ),
+                            yaxis2=dict(
+                                domain=[0.50, 0.75],
+                                title='Flux'
+                                ),
+                            yaxis3=dict(
+                                domain=[0.25, 0.50],
+                                title='Det Rad'
+                                ),
+                            yaxis4 = dict(
+                                domain=[0, 0.25],
+                                title='EXP Time'
+                                ),
+                            title = 'Zone: ' + str(k+1) + ' total exposure time: ' + str(len(gAppOutput[k])* 30)
+                            )
+                    pfig = go.Figure(data=data, layout=layout)
                     maxx = int(math.ceil(max(gAppOutput[k])))
                     minx = int(math.floor(min(gAppOutput[k])))
                     tiemdelta = maxx - minx
@@ -134,66 +219,8 @@ for i in range(len(readfile)):
                     inc = 0
                     inc_width = 0
                     recording = False
-                    for datapoint in flags[k]:
-                        if prev_datapoint == datapoint or inc == 0:
-                            prev_datapoint = datapoint
-                            recording = True
-                            inc_width += 1
-                        else:
-                            if recording is True:
-                                recording = False
-                                loc = int(math.floor(inc_width/2))
-                                inc_width = 0
-                                toplotx = []
-                                toploty = []
-                                for flagstore in dataflags:
-                                    for errormessage in flagstore:
-                                        toplotx.append(gAppOutput[k][inc-loc])
-                                        toploty.append(NUMERICFLAGARRAY[errormessage-1])
-                                checks.plot(toplotx, toploty, fillstyle='full', **marker_style)
-                                moreploty = []
-                                toplotx = []
-                                for value in range(8):
-                                    if value not in toploty:
-                                        moreploty.append(value)
-                                        toplotx.append(gAppOutput[k][inc-loc])
-                                    else:
-                                        pass
-                                checks.plot(toplotx, moreploty, fillstyle='none', **marker_style)
-                            prev_datapoint = datapoint
-                            ax1.axvline(x = gAppOutput[k][inc], linestyle='--', color='black')
-                        inc += 1
-                    plt.title('Zone # ' + str(k + 1) + ' Estimated integration time: ' + str(len(goodtime)*10 + len(badtime)*10) + '(s)')
-                    ax1.errorbar(goodtime, goodflux, yerr=gooderr, fmt='o')
-                    ax1.errorbar(badtime, badflux, yerr=baderr,
-                                 fmt='ro')  # Work on getting flags running, your close but not there
-                    ax1.plot(gAppOutput[k], fluxfile[k], 'ko-')
-                    ax1.plot(goodtime, goodflux, 'ko')
-                    ax1.plot(badtime, badflux, 'ro')
-                    ax1.set_xlabel('Time(s)')
-                    ax1.set_ylabel('bgflux')
-                    ax2 = plt.subplot(413, sharex = ax1)
-                    plt.plot(gAppOutput[k], exptime[k], 'o-')
-                    plt.xlabel('Time(s)')
-                    plt.ylabel('EXP (s)')
-                    ax3 = plt.subplot(414, sharex = ax1)
-                    plt.plot(gAppOutput[k], detRAD[k], 'o-')
-                    plt.xlabel('Time(s)')
-                    plt.ylabel('RAD (units)')
-                    print '###########'
-                    print 'saving fig for ' + readfile[i][0] + ' this is the #' + str(numsave) + ' time'
-                    plt.savefig(readfile[i][0] + 'ZONE_' + str(k + 1) + '.png', dpi=200)
                     numsave += 1
-                    plt.close()
-                    print 'plot creation complete'
-                    axt.set_title('Zone # ' + str(k + 1) + ' Estimated integration time: ' + str(len(goodtime)*10 + len(badtime)*10) + '(s)')
-                    axt.errorbar(goodtime, goodflux, yerr=gooderr, fmt='o')
-                    axt.errorbar(badtime, badflux, yerr=baderr,
-                                 fmt='ro')  # Work on getting flags running, your close but not there
-                    axt.plot(gAppOutput[k], fluxfile[k], 'ko-')
-                    axt.plot(goodtime, goodflux, 'ko')
-                    axt.plot(badtime, badflux, 'ro')
-                    url = 'TEST' #py.plot_mpl(fig, filename = readfile[i][0] + '_ZONE_' + str(k+1), auto_open = False)
+                    url = py.plot(pfig, filename = readfile[i][0] + '_ZONE_' + str(k+1), auto_open = False)
                     urlout.append(readfile[i][0] + '_ZONE_' + str(k+1) + '\t' + url + '\n')
                     currentdir = os.path.abspath('.')
                     os.chdir(start)
@@ -211,7 +238,7 @@ for i in range(len(readfile)):
                 fig, axt = plt.subplots() 
                 ax1 = plt.subplot(311)
                 plt.title('Zone # 1 Estimated integration time: ' + str(len(fluxfile)*10) + '(s)')
-                plt.errorbar(gAppFile['t_mean'], gAppFile['flux_bgsub'], yerr=gAppFile['flux_err'], fmt='o')
+                #plt.errorbar(gAppFile['t_mean'], gAppFile['flux_bgsub'], yerr=gAppFile['flux_err'], fmt='o')
                 plt.plot(gAppFile['t_mean'], gAppFile['flux_bgsub'], 'ko-')
                 plt.xlabel('Time(s)')
                 plt.ylabel('bgflux')
@@ -226,7 +253,7 @@ for i in range(len(readfile)):
                 plt.savefig(readfile[i][0] + 'ZONE_1.png', dpi=250)
                 plt.close()
                 print 'plot creation complete'
-                axt.errorbar(gAppFile['t_mean'], gAppFile['flux_bgsub'], yerr=gAppFile['flux_err'], fmt='o')
+                #axt.errorbar(gAppFile['t_mean'], gAppFile['flux_bgsub'], yerr=gAppFile['flux_err'], fmt='o')
                 axt.plot(gAppFile['t_mean'], gAppFile['flux_bgsub'], 'ko-')
                 axt.set_xlabel('Time(s)')
                 axt.set_ylabel('bgflux')
@@ -238,6 +265,8 @@ for i in range(len(readfile)):
             print 'SKIPPING NO CSV DATA FILE FOR TAGRET ' + readfile[i][0]
         print 'Moving to next target'
         os.chdir('../../..')
+    except OSError:
+        print 'NO FILE ADVICICINT'
 for i in urlout:
     print 'wrightint:', i
     urlfile.write(i)

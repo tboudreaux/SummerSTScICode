@@ -1,12 +1,12 @@
 import os
-from gPhoton.gAperture import gAperture
+from gPhoton.gAperture import gaperture as gAperture
 import matplotlib.pyplot as plt
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from gPhoton.gphoton_utils import read_lc
 from datetime import datetime
 starttime = datetime.now()
-filename = 'sdBHundredLs.csv'
+filename = 'KP.csv'
 
 readfile = open(filename, 'rb')
 readfile = readfile.readlines()
@@ -56,16 +56,19 @@ while cont is False:
     else:
         print 'Please enter either yes or no'
         cont = False
-overwriteGAppCSV = True
+overwriteGAppCSV = False
 for i in range(len(readfile)):
     use_parameters = [None] * 5
-    os.chdir('sdBs/HundredRun/' + readfile[i][0])
+    os.chdir('PulseTest/KnownPulse/' + readfile[i][0])
     dir = os.listdir('.')
     if 'BAD.txt' in dir:
         print 'Passing on Data Query for target number ' + str(i + 1) + '[' + readfile[i][0] + ']'
         pass
     else:
-        regionfile = open('region_' + readfile[i][0] + '.reg')
+        try:
+            regionfile = open('region_' + readfile[i][0].lower() + '.reg')
+        except IOError:
+            regionfile = open('region_' + readfile[i][0].upper() + '.reg')
         regionread = regionfile.readlines()
         regionread = [x.rstrip() for x in regionread]
         size_info = regionread[4:7]
@@ -104,7 +107,7 @@ for i in range(len(readfile)):
             print '* Annulus small:', use_parameters[3]
             print '* Annulus large:', use_parameters[4]
             print '########################'
-            gAperture(band='NUV', skypos=[use_parameters[0], use_parameters[1]], radius = use_parameters[2], annulus = [use_parameters[3], use_parameters[4]], stepsz = 30, csvfile = 'GENLC_' + str(readfile[i][0]) + '.csv')
+            gAperture(band='NUV', skypos=[use_parameters[0], use_parameters[1]], radius = use_parameters[2], annulus = [use_parameters[3], use_parameters[4]], stepsz = 30, csvfile = 'GENLC_' + str(readfile[i][0]) + '.csv', verbose=3)
         curtime = datetime.now()
         print 'Finished Data Query for target number ' + str(i + 1) + '[' + readfile[i][0] + '] at time: ' + str(curtime)
         print 'Total Query time was: ' + str(curtime-QueryStart)
